@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mandarin Bersinar - Portal Pengajar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans">
+
+    <!-- App Container -->
+    <div class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="bg-red-700 text-white shadow-md">
+            <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+                <div>
+                    <h1 class="text-2xl font-bold tracking-wider"><i class="fa-solid fa-graduation-cap mr-2"></i>MANDARIN BERSINAR</h1>
+                    <p class="text-xs text-red-200">Pengajar: Williem Jonathan | Portal Les Privat</p>
+                </div>
+                <div class="text-right text-sm bg-red-800 px-3 py-1.5 rounded-lg border border-red-600">
+                    <span id="current-date"></span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="bg-white border-b shadow-sm sticky top-0 z-10">
+            <div class="max-w-7xl mx-auto px-4 flex space-x-1 overflow-x-auto">
+                <button onclick="switchTab('jadwal')" class="tab-btn px-4 py-3 font-semibold text-red-600 border-b-2 border-red-600 flex items-center gap-2"><i class="fa-solid fa-calendar-days"></i> Jadwal Sen-Sab</button>
+                <button onclick="switchTab('siswa')" class="tab-btn px-4 py-3 font-medium text-slate-600 hover:text-red-600 flex items-center gap-2"><i class="fa-solid fa-users"></i> Daftar Siswa</button>
+                <button onclick="switchTab('absen')" class="tab-btn px-4 py-3 font-medium text-slate-600 hover:text-red-600 flex items-center gap-2"><i class="fa-solid fa-clipboard-user"></i> Absensi & Materi</button>
+                <button onclick="switchTab('nilai')" class="tab-btn px-4 py-3 font-medium text-slate-600 hover:text-red-600 flex items-center gap-2"><i class="fa-solid fa-star"></i> Daftar Nilai & Rapor</button>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="flex-grow max-w-7xl w-full mx-auto p-4 md:p-6">
+
+            <!-- TAB 1: JADWAL -->
+            <div id="tab-jadwal" class="tab-content space-y-6">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-xl font-bold text-slate-800">Jadwal Les Senin - Sabtu</h2>
+                    <button onclick="openJadwalModal()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow"><i class="fa-solid fa-plus mr-1"></i> Tambah Jadwal</button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="jadwal-container">
+                    <!-- Dynamic Schedule Cards by Day -->
+                </div>
+            </div>
+
+            <!-- TAB 2: SISWA -->
+            <div id="tab-siswa" class="tab-content hidden space-y-6">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-xl font-bold text-slate-800">Daftar Siswa (Kelas 1 - 12)</h2>
+                    <button onclick="openSiswaModal()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow"><i class="fa-solid fa-user-plus mr-1"></i> Tambah Siswa</button>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-slate-100 text-slate-600 text-xs uppercase font-semibold">
+                            <tr>
+                                <th class="p-3">No</th>
+                                <th class="p-3">Nama Lengkap</th>
+                                <th class="p-3">Kelas</th>
+                                <th class="p-3">No. HP Wali</th>
+                                <th class="p-3 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="siswa-table-body" class="divide-y divide-slate-200 text-sm">
+                            <!-- Dynamic Row -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB 3: ABSENSI & MATERI -->
+            <div id="tab-absen" class="tab-content hidden space-y-6">
+                <div class="bg-white p-4 rounded-xl shadow-sm border space-y-4">
+                    <h2 class="text-xl font-bold text-slate-800">Absensi & Catatan Materi</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Tanggal</label>
+                            <input type="date" id="absen-tanggal" class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-red-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Pilih Kelas</label>
+                            <select id="filter-kelas-absen" onchange="loadAbsenList()" class="w-full border rounded-lg p-2 text-sm focus:ring-2 focus:ring-red-500">
+                                <option value="">-- Pilih Kelas --</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Materi Catatan -->
+                    <div class="mt-4 pt-4 border-t">
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Catatan Materi yang Disampaikan</label>
+                        <textarea id="catatan-materi" rows="3" placeholder="Tuliskan catatan materi hari ini (contoh: Bab 6 Kosakata Anggota Keluarga & Latihan Percakapan)..." class="w-full border rounded-lg p-3 text-sm focus:ring-2 focus:ring-red-500"></textarea>
+                    </div>
+
+                    <!-- Tabel Absen Siswa -->
+                    <div class="overflow-x-auto mt-4">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-slate-100 text-slate-600 text-xs uppercase font-semibold">
+                                <tr>
+                                    <th class="p-3">Nama Siswa</th>
+                                    <th class="p-3 text-center">Status Kehadiran</th>
+                                </tr>
+                            </thead>
+                            <tbody id="absen-table-body" class="divide-y divide-slate-200 text-sm">
+                                <tr><td colspan="2" class="p-4 text-center text-slate-400">Pilih kelas terlebih dahulu</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <button onclick="saveAbsenMateri()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-lg text-sm font-medium shadow"><i class="fa-solid fa-floppy-disk mr-1"></i> Simpan Absensi & Materi</button>
+                </div>
+            </div>
+
+            <!-- TAB 4: NILAI & RAPOR -->
+            <div id="tab-nilai" class="tab-content hidden space-y-6">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-xl font-bold text-slate-800">Daftar Nilai & Pembuatan Rapor</h2>
+                    <button onclick="openNilaiModal()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow"><i class="fa-solid fa-plus mr-1"></i> Input Nilai Baru</button>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-slate-100 text-slate-600 text-xs uppercase font-semibold">
+                            <tr>
+                                <th class="p-3">Nama Siswa</th>
+                                <th class="p-3">Kelas</th>
+                                <th class="p-3">Jenis Ujian/Tugas</th>
+                                <th class="p-3 text-center">Nilai</th>
+                                <th class="p-3 text-center">Predikat</th>
+                                <th class="p-3 text-center">Aksi Rapor</th>
+                            </tr>
+                        </thead>
+                        <tbody id="nilai-table-body" class="divide-y divide-slate-200 text-sm">
+                            <!-- Dynamic Row -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- MODAL TAMBAH JADWAL -->
+    <div id="modal-jadwal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl max-w-md w-full p-6 space-y-4 shadow-xl">
+            <h3 class="text-lg font-bold text-slate-800">Tambah Jadwal Les</h3>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700">Hari</label>
+                    <select id="j-hari" class="w-full border rounded-lg p-2 text-sm">
+                        <option value="Senin">Senin</option>
+                        <option value="Selasa">Selasa</option>
+                        <option value="Rabu">Rabu</option>
+                        <option value="Kamis">Kamis</option>
+                        <option value="Jumat">Jumat</option>
+                        <option value="Sabtu">Sabtu</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700">Jam Les (Contoh: 15.00 - 16.30)</label>
+                    <input type="text" id="j-jam" class="w-full border rounded-lg p-2 text-sm" placeholder="15.00 - 16.30">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700">Nama Siswa / Kelas</label>
+                    <input type="text" id="j-info" class="w-full border rounded-lg p-2 text-sm" placeholder="Kelas 3 SD / Budi">
+                </div>
+            </div>
+            <div class="flex justify-end space-x-2 pt-2">
+                <button onclick="closeJadwalModal()" class="px-4 py-2 border rounded-lg text-sm text-slate-600 hover:bg-slate-100">Batal</button>
+                <button onclick="saveJadwal()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL TAMBAH SISWA -->
+    <div id="modal-siswa" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl max-w-md w-full p-6 space-y-4 shadow-xl">
+            <h3 class="text-lg font-bold text-slate-800">Tambah Siswa Baru</h3>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700">Nama Lengkap</label>
+                    <input type="text" id="s-nama" class="w-full border rounded-lg p-2 text-sm" placeholder="Nama siswa">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700">Tingkat Kelas</label>
+                    <select id="s-kelas" class="w-full border rounded-lg p-2 text-sm">
+                        <option value="Kelas 1">Kelas 1</option>
+                        <option value="Kelas 2">Kelas 2</option>
+                        <option value="Kelas 3">Kelas 3</option>
+                        <option value="Kelas 4">Kelas 4</option>
+                        <option value="Kelas 5">Kelas 5</option>
+                        <option value="Kelas 6">Kelas 6</option>
+                        <option value="Kelas 7">Kelas 7</option>
+                        <option value="Kelas 8">Kelas 8</option>
+                        <option value="Kelas 9">Kelas 9</option>
+                        <option value="Kelas 10">Kelas 10</option>
+                        <option value="Kelas 11">Kelas 11</option>
+                        <option value="Kelas 12">Kelas 12</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700">No. HP Wali / Orang Tua</label>
+                    <input type="text" id="s-hp" class="w-full border rounded-lg p-2 text-sm" placeholder="08xxxxxxxxxx">
+                </div>
+            </div>
+            <div class="flex justify-end space-x-2 pt-2">
+                <button onclick="closeSiswaModal()" class="px-4 py-2 border rounded-lg text-sm text-slate-600 hover:bg-slate-100">Batal</button>
+                <button onclick="saveSiswa()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL INPUT NILAI -->
+    <div id="modal-nilai" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl max-w-md w-full p-6 space-y-4 shadow-xl">
+            <h3 class="text-lg font-bold text-slate-800">Input Nilai Siswa</h3>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700">Pilih Siswa</label>
+                    <select id="n-siswa" class="w-full border rounded-lg p-2 text-sm"></select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700">Jenis Tugas / Ujian</label>
+                    <input type="text" id="n-jenis" class="w-full border rounded-lg p-2 text-sm" placeholder="Ujian Bab 6-7 / Tugas Menulis Hanzi">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700">Nilai (0 - 100)</label>
+                    <input type="number" id="n-angka" class="w-full border rounded-lg p-2 text-sm" placeholder="85">
+                </div>
+            </div>
+            <div class="flex justify-end space-x-2 pt-2">
+                <button onclick="closeNilaiModal()" class="px-4 py-2 border rounded-lg text-sm text-slate-600 hover:bg-slate-100">Batal</button>
+                <button onclick="saveNilai()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL RAPOR -->
+    <div id="modal-rapor" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl max-w-xl w-full p-6 space-y-4 shadow-xl max-h-[90vh] overflow-y-auto">
+            <div class="text-center border-b pb-4">
+                <h2 class="text-xl font-bold text-red-700">MANDARIN BERSINAR</h2>
+                <p class="text-xs text-slate-500">Laporan Hasil Belajar Bahasa Mandarin</p>
+                <p class="text-xs text-slate-500">Pengajar: Williem Jonathan</p>
+            </div>
+            <div id="rapor-content" class="space-y-3 text-sm">
+                <!-- Rapor Details -->
+            </div>
+            <div class="flex justify-end space-x-2 pt-4 border-t">
+                <button onclick="window.print()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm"><i class="fa-solid fa-print mr-1"></i> Cetak / PDF</button>
+                <button onclick="closeRaporModal()" class="px-4 py-2 border rounded-lg text-sm text-slate-600 hover:bg-slate-100">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // Tanggal Hari Ini
+        document.getElementById('current-date').innerText = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        document.getElementById('absen-tanggal').valueAsDate = new Date();
+
+        // Data Store (LocalStorage)
+        let db = JSON.parse(localStorage.getItem('mandarin_bersinar_db')) || {
+            siswa: [],
+            jadwal: [],
+            nilai: [],
+            absen: {}
+        };
+
+        function saveData() {
+            localStorage.setItem('mandarin_bersinar_db', JSON.stringify(db));
+        }
+
+        // Tab Switching
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('border-b-2', 'border-red-600', 'text-red-600', 'font-semibold');
+                el.classList.add('text-slate-600', 'font-medium');
+            });
+            document.getElementById('tab-' + tabId).classList.remove('hidden');
+            event.currentTarget.classList.add('border-b-2', 'border-red-600', 'text-red-600', 'font-semibold');
+            event.currentTarget.classList.remove('text-slate-600', 'font-medium');
+
+            if(tabId === 'jadwal') renderJadwal();
+            if(tabId === 'siswa') renderSiswa();
+            if(tabId === 'absen') initAbsenDropdown();
+            if(tabId === 'nilai') renderNilai();
+        }
+
+        // --- JADWAL ---
+        function openJadwalModal() { document.getElementById('modal-jadwal').classList.remove('hidden'); }
+        function closeJadwalModal() { document.getElementById('modal-jadwal').classList.add('hidden'); }
+        
+        function saveJadwal() {
+            const hari = document.getElementById('j-hari').value;
+            const jam = document.getElementById('j-jam').value;
+            const info = document.getElementById('j-info').value;
+            if(!jam || !info) return alert('Mohon isi jam dan info siswa/kelas!');
+            
+            db.jadwal.push({ id: Date.now(), hari, jam, info });
+            saveData();
+            closeJadwalModal();
+            renderJadwal();
+        }
+
+        function deleteJadwal(id) {
+            db.jadwal = db.jadwal.filter(j => j.id !== id);
+            saveData();
+            renderJadwal();
+        }
+
+        function renderJadwal() {
+            const container = document.getElementById('jadwal-container');
+            container.innerHTML = '';
+            const hariList = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            
+            hariList.forEach(h => {
+                const items = db.jadwal.filter(j => j.hari === h);
+                let htmlItems = items.length === 0 ? '<p class="text-xs text-slate-400 italic">Belum ada jadwal</p>' : 
+                    items.map(i => `
+                        <div class="bg-slate-50 border p-2.5 rounded-lg flex justify-between items-center text-sm">
+                            <div>
+                                <span class="font-bold text-red-700 text-xs block"><i class="fa-regular fa-clock"></i> ${i.jam}</span>
+                                <span class="text-slate-700 font-medium">${i.info}</span>
+                            </div>
+                            <button onclick="deleteJadwal(${i.id})" class="text-slate-400 hover:text-red-600"><i class="fa-solid fa-trash text-xs"></i></button>
+                        </div>
+                    `).join('');
+
+                container.innerHTML += `
+                    <div class="bg-white rounded-xl shadow-sm border p-4 space-y-3">
+                        <h3 class="font-bold text-slate-800 border-b pb-2 flex justify-between items-center">
+                            <span><i class="fa-solid fa-calendar-day text-red-600 mr-2"></i>${h}</span>
+                            <span class="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full">${items.length} sesi</span>
+                        </h3>
+                        <div class="space-y-2">${htmlItems}</div>
+                    </div>
+                `;
+            });
+        }
+
+        // --- SISWA ---
+        function openSiswaModal() { document.getElementById('modal-siswa').classList.remove('hidden'); }
+        function closeSiswaModal() { document.getElementById('modal-siswa').classList.add('hidden'); }
+
+        function saveSiswa() {
+            const nama = document.getElementById('s-nama').value;
+            const kelas = document.getElementById('s-kelas').value;
+            const hp = document.getElementById('s-hp').value;
+            if(!nama) return alert('Nama siswa wajib diisi!');
+
+            db.siswa.push({ id: Date.now(), nama, kelas, hp });
+            saveData();
+            closeSiswaModal();
+            renderSiswa();
+        }
+
+        function deleteSiswa(id) {
+            if(confirm('Hapus siswa ini?')) {
+                db.siswa = db.siswa.filter(s => s.id !== id);
+                saveData();
+                renderSiswa();
+            }
+        }
+
+        function renderSiswa() {
+            const tbody = document.getElementById('siswa-table-body');
+            tbody.innerHTML = db.siswa.length === 0 ? '<tr><td colspan="5" class="p-4 text-center text-slate-400">Belum ada data siswa</td></tr>' : 
+                db.siswa.map((s, idx) => `
+                    <tr class="hover:bg-slate-50">
+                        <td class="p-3">${idx + 1}</td>
+                        <td class="p-3 font-medium text-slate-800">${s.nama}</td>
+                        <td class="p-3"><span class="bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded font-medium">${s.kelas}</span></td>
+                        <td class="p-3">${s.hp || '-'}</td>
+                        <td class="p-3 text-center"><button onclick="deleteSiswa(${s.id})" class="text-red-500 hover:text-red-700 text-xs"><i class="fa-solid fa-trash"></i> Hapus</button></td>
+                    </tr>
+                `).join('');
+        }
+
+        // --- ABSEN & MATERI ---
+        function initAbsenDropdown() {
+            const select = document.getElementById('filter-kelas-absen');
+            const kelasUnik = [...new Set(db.siswa.map(s => s.kelas))];
+            select.innerHTML = '<option value="">-- Pilih Kelas --</option>' + kelasUnik.map(k => `<option value="${k}">${k}</option>`).join('');
+        }
+
+        function loadAbsenList() {
+            const kelas = document.getElementById('filter-kelas-absen').value;
+            const tanggal = document.getElementById('absen-tanggal').value;
+            const tbody = document.getElementById('absen-table-body');
+            if(!kelas) {
+                tbody.innerHTML = '<tr><td colspan="2" class="p-4 text-center text-slate-400">Pilih kelas terlebih dahulu</td></tr>';
+                return;
+            }
+
+            const siswaFiltered = db.siswa.filter(s => s.kelas === kelas);
+            const key = `${tanggal}_${kelas}`;
+            const savedData = db.absen[key] || { catatan: '', status: {} };
+            
+            document.getElementById('catatan-materi').value = savedData.catatan || '';
+
+            tbody.innerHTML = siswaFiltered.length === 0 ? '<tr><td colspan="2" class="p-4 text-center text-slate-400">Tidak ada siswa di kelas ini</td></tr>' :
+                siswaFiltered.map(s => {
+                    const status = savedData.status[s.id] || 'Hadir';
+                    return `
+                        <tr>
+                            <td class="p-3 font-medium">${s.nama}</td>
+                            <td class="p-3 text-center space-x-2">
+                                <label class="inline-flex items-center text-xs"><input type="radio" name="absen_${s.id}" value="Hadir" ${status==='Hadir'?'checked':''} class="mr-1"> Hadir</label>
+                                <label class="inline-flex items-center text-xs"><input type="radio" name="absen_${s.id}" value="Izin" ${status==='Izin'?'checked':''} class="mr-1"> Izin</label>
+                                <label class="inline-flex items-center text-xs"><input type="radio" name="absen_${s.id}" value="Sakit" ${status==='Sakit'?'checked':''} class="mr-1"> Sakit</label>
+                                <label class="inline-flex items-center text-xs"><input type="radio" name="absen_${s.id}" value="Alpha" ${status==='Alpha'?'checked':''} class="mr-1"> Alpha</label>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+        }
+
+        function saveAbsenMateri() {
+            const kelas = document.getElementById('filter-kelas-absen').value;
+            const tanggal = document.getElementById('absen-tanggal').value;
+            if(!kelas) return alert('Pilih kelas terlebih dahulu!');
+
+            const key = `${tanggal}_${kelas}`;
+            const catatan = document.getElementById('catatan-materi').value;
+            const siswaFiltered = db.siswa.filter(s => s.kelas === kelas);
+            
+            let status = {};
+            siswaFiltered.forEach(s => {
+                const radios = document.getElementsByName(`absen_${s.id}`);
+                for(let r of radios) {
+                    if(r.checked) status[s.id] = r.value;
+                }
+            });
+
+            db.absen[key] = { catatan, status };
+            saveData();
+            alert('Absensi dan catatan materi berhasil disimpan!');
+        }
+
+        // --- NILAI & RAPOR ---
+        function openNilaiModal() {
+            const select = document.getElementById('n-siswa');
+            select.innerHTML = db.siswa.map(s => `<option value="${s.id}">${s.nama} (${s.kelas})</option>`).join('');
+            document.getElementById('modal-nilai').classList.remove('hidden');
+        }
+        function closeNilaiModal() { document.getElementById('modal-nilai').classList.add('hidden'); }
+
+        function saveNilai() {
+            const siswaId = document.getElementById('n-siswa').value;
+            const jenis = document.getElementById('n-jenis').value;
+            const angka = parseInt(document.getElementById('n-angka').value);
+            if(!jenis || isNaN(angka)) return alert('Mohon lengkapi jenis ujian dan nilai!');
+
+            let predikat = 'C';
+            if(angka >= 85) predikat = 'A (Sangat Baik)';
+            else if(angka >= 75) predikat = 'B (Baik)';
+            else if(angka >= 65) predikat = 'C (Cukup)';
+            else predikat = 'D (Perlu Bimbingan)';
+
+            db.nilai.push({ id: Date.now(), siswaId, jenis, angka, predikat });
+            saveData();
+            closeNilaiModal();
+            renderNilai();
+        }
+
+        function deleteNilai(id) {
+            db.nilai = db.nilai.filter(n => n.id !== id);
+            saveData();
+            renderNilai();
+        }
+
+        function renderNilai() {
+            const tbody = document.getElementById('nilai-table-body');
+            tbody.innerHTML = db.nilai.length === 0 ? '<tr><td colspan="6" class="p-4 text-center text-slate-400">Belum ada data nilai</td></tr>' :
+                db.nilai.map(n => {
+                    const s = db.siswa.find(x => x.id == n.siswaId);
+                    const namaSiswa = s ? s.nama : 'Siswa Dihapus';
+                    const kelasSiswa = s ? s.kelas : '-';
+                    return `
+                        <tr class="hover:bg-slate-50">
+                            <td class="p-3 font-medium">${namaSiswa}</td>
+                            <td class="p-3">${kelasSiswa}</td>
+                            <td class="p-3">${n.jenis}</td>
+                            <td class="p-3 text-center font-bold text-red-600">${n.angka}</td>
+                            <td class="p-3 text-center"><span class="bg-slate-100 text-slate-700 text-xs px-2 py-1 rounded">${n.predikat}</span></td>
+                            <td class="p-3 text-center space-x-2">
+                                <button onclick="openRapor(${n.id})" class="text-blue-600 hover:text-blue-800 text-xs font-medium"><i class="fa-solid fa-file-lines"></i> Rapor</button>
+                                <button onclick="deleteNilai(${n.id})" class="text-red-500 hover:text-red-700 text-xs"><i class="fa-solid fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+        }
+
+        function openRapor(nilaiId) {
+            const n = db.nilai.find(x => x.id == nilaiId);
+            const s = db.siswa.find(x => x.id == n.siswaId);
+            if(!s) return alert('Data siswa tidak ditemukan');
+
+            document.getElementById('rapor-content').innerHTML = `
+                <div class="grid grid-cols-2 gap-2 bg-slate-50 p-3 rounded-lg text-xs">
+                    <div><strong>Nama Siswa:</strong> ${s.nama}</div>
+                    <div><strong>Kelas:</strong> ${s.kelas}</div>
+                    <div><strong>Pengajar:</strong> Williem Jonathan</div>
+                    <div><strong>Tanggal Rapor:</strong> ${new Date().toLocaleDateString('id-ID')}</div>
+                </div>
+                <div class="mt-4">
+                    <h4 class="font-bold text-slate-700 mb-2">Evaluasi Akademik</h4>
+                    <table class="w-full text-left border-collapse text-xs">
+                        <tr class="bg-slate-100"><th class="p-2">Mata Pelajaran / Sesi</th><th class="p-2">Komponen</th><th class="p-2 text-center">Nilai</th><th class="p-2 text-center">Predikat</th></tr>
+                        <tr><td class="p-2 border-b">Bahasa Mandarin (Mandarin Bersinar)</td><td class="p-2 border-b">${n.jenis}</td><td class="p-2 border-b text-center font-bold">${n.angka}</td><td class="p-2 border-b text-center">${n.predikat}</td></tr>
+                    </table>
+                </div>
+                <div class="mt-4 text-xs bg-red-50 p-3 rounded-lg border border-red-100">
+                    <strong>Catatan Pengajar (Williem Jonathan):</strong><br>
+                    Siswa menunjukkan perkembangan yang baik dalam sesi pembelajaran Mandarin Bersinar. Terus tingkatkan latihan kosakata dan pelafalan di rumah!
+                </div>
+            `;
+            document.getElementById('modal-rapor').classList.remove('hidden');
+        }
+
+        function closeRaporModal() { document.getElementById('modal-rapor').classList.add('hidden'); }
+
+        // Initial Load
+        renderJadwal();
+    </script>
+</body>
+</html>
